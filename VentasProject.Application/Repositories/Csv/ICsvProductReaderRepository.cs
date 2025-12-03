@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace VentasProject.Application.Repositories.Csv
+﻿namespace VentasProject.Application.Repositories.Csv
 {
-    internal class ICsvProductReaderRepository
+    using VentasProject.Application.Repositories.Base;
+    using VentasProject.Domain.Entities.Csv;
+    public interface ICsvProductReaderRepository : IFileReaderRepository<Products>
     {
     }
 }

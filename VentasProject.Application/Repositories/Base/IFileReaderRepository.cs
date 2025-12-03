@@ -8,6 +8,6 @@ namespace VentasProject.Application.Repositories.Base
 {
     public interface IFileReaderRepository<TClass> where TClass : class
     {
-        Task<IEnumerable<TClass>> ReadFilesAsync(string path);
+        Task<IEnumerable<TClass>> ReadFileAsync<T>();
     }
 }

@@ -11,5 +11,6 @@ namespace VentasProject.Application.Repositories.Csv
 {
     public interface ICsvCustomerReaderRepository : IFileReaderRepository<Customers>
     {
+        
     }
 }

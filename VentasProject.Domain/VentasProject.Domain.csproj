@@ -9,7 +9,8 @@
   <ItemGroup>
     <Folder Include="Entities\Api\" />
     <Folder Include="Entities\Db\" />
-    <Folder Include="Entities\Dwh\" />
+    <Folder Include="Entities\Dwh\Dimensions\" />
+    <Folder Include="Entities\Dwh\Facts\" />
   </ItemGroup>
 
   <ItemGroup>
