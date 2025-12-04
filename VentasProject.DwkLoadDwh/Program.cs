@@ -1,6 +1,12 @@
+using Microsoft.EntityFrameworkCore;
+using VentasProject.Application.Interfaces;
 using VentasProject.Application.Repositories.Csv;
+using VentasProject.Application.Repositories.Dwh;
+using VentasProject.Application.Services;
 using VentasProject.DwkLoadDwh;
 using VentasProject.Persistence.Repositories.Csv;
+using VentasProject.Persistence.Repositories.Dwh;
+using VentasProject.Persistence.Repositories.Dwh.Context;
 
 namespace VentasProject.DwkLoadDwh
 {
@@ -39,7 +45,14 @@ namespace VentasProject.DwkLoadDwh
                 var logger = sp.GetRequiredService<ILogger<CsvOrderReaderRepository>>();
                 return new CsvOrderReaderRepository(configuration, logger, ordersFilePath);
             });
-            
+
+            builder.Services.AddDbContext<DwhSalesContext>(options =>
+            options.UseSqlServer(builder.Configuration.GetConnectionString("DwhConnection")));
+
+            builder.Services.AddScoped<IDwhRepository, DwhRepository>();
+
+            builder.Services.AddScoped<DwhHandlerService>();
+
             builder.Services.AddScoped<ISalesRepository, SalesRepository>();
 
             builder.Services.AddHostedService<Worker>();

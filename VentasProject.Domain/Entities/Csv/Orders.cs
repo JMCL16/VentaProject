@@ -11,7 +11,7 @@ namespace VentasProject.Domain.Entities.Csv
         public int OrderId { get; set; }
         public int CustomerId { get; set; }
         public DateOnly OrderDate { get; set; }
-        public string Status { get; set; }
+        public string? Status { get; set; }
         [CsvHelper.Configuration.Attributes.Ignore]
         public decimal TotalAmount { get; set; }
 

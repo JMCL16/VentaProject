@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36623.8 d17.14
+VisualStudioVersion = 17.14.36623.8
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VentasProject.Persistence", "VentasProject.Persistence\VentasProject.Persistence.csproj", "{EFA12EDF-2FFC-4FA0-83D7-A4DC6A2D2829}"
 EndProject
@@ -18,6 +18,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infraestructure", "Infraestructure", "{ED854D11-17E1-42E7-B8CC-0E57D899488B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VentasProject.DwkLoadDwh", "VentasProject.DwkLoadDwh\VentasProject.DwkLoadDwh.csproj", "{9ADB8118-5B99-42F4-BBE6-CE7E6DE0E39D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VentasProject.Api", "VentasProject.Api\VentasProject.Api.csproj", "{7329AC69-EDD1-4457-985E-6DB93DCE172D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +43,10 @@ Global
 		{9ADB8118-5B99-42F4-BBE6-CE7E6DE0E39D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9ADB8118-5B99-42F4-BBE6-CE7E6DE0E39D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9ADB8118-5B99-42F4-BBE6-CE7E6DE0E39D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7329AC69-EDD1-4457-985E-6DB93DCE172D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7329AC69-EDD1-4457-985E-6DB93DCE172D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7329AC69-EDD1-4457-985E-6DB93DCE172D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7329AC69-EDD1-4457-985E-6DB93DCE172D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -50,6 +56,7 @@ Global
 		{D8A9CDE6-4FC9-4EB8-9C87-759BCFB0E8E2} = {1B17C8CE-1F63-43FA-8A77-D8877B11416E}
 		{D6D676B5-DE05-45BA-AA8B-2EE512332316} = {1B17C8CE-1F63-43FA-8A77-D8877B11416E}
 		{9ADB8118-5B99-42F4-BBE6-CE7E6DE0E39D} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{7329AC69-EDD1-4457-985E-6DB93DCE172D} = {E4BB1C7C-3607-4C1D-8388-16A818A95C14}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3D9DE60B-3B26-433C-B0EB-C79099AA53C9}
