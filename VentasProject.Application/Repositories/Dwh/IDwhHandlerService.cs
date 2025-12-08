@@ -11,5 +11,6 @@ namespace VentasProject.Application.Repositories.Dwh
     public interface IDwhHandlerService
     {
         Task<Result> TAndLDataToDwhAsync(List<Customers> customers, List<Products> products, List<Sale> orders);
+        Task <Result> LoadFactsToDwhAsync(List<Sale> sales);
     }
 }

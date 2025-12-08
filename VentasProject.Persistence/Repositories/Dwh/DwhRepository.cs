@@ -11,6 +11,7 @@ using VentasProject.Application.Interfaces;
 using VentasProject.Application.Repositories.Dwh;
 using VentasProject.Application.Services;
 using VentasProject.Domain.Entities.Dwh.Dimensions;
+using VentasProject.Domain.Entities.Dwh.Facts;
 using VentasProject.Persistence.Repositories.Db.Context;
 using VentasProject.Persistence.Repositories.Dwh.Context;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -132,13 +133,17 @@ namespace VentasProject.Persistence.Repositories.Dwh
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                await _context.Database.ExecuteSqlRawAsync("DELETE FROM [Fact].[FactVentas]");
+                await _context.Database.ExecuteSqlRawAsync("DELETE FROM [Facts].[Fact_Ventas]");
+                await _context.Database.ExecuteSqlRawAsync("DBCC CHECKIDENT ('[Facts].[Fact_Ventas]', RESEED, 0)");
+
                 await _context.Database.ExecuteSqlRawAsync("DELETE FROM [Dimension].[Dim_Customer]");
                 await _context.Database.ExecuteSqlRawAsync("DBCC CHECKIDENT ('[Dimension].[Dim_Customer]', RESEED, 0)");
-
   
                 await _context.Database.ExecuteSqlRawAsync("DELETE FROM [Dimension].[Dim_Products]");
                 await _context.Database.ExecuteSqlRawAsync("DBCC CHECKIDENT ('[Dimension].[Dim_Products]', RESEED, 0)");
+
+                await _context.Database.ExecuteSqlRawAsync("DELETE FROM [Dimension].[Dim_Date]");
+                await _context.Database.ExecuteSqlRawAsync("DBCC CHECKIDENT ('[Dimension].[Dim_Date]', RESEED, 0)");
                 await transaction.CommitAsync();
 
                 _logger.LogInformation("Data Warehouse limpio.");
@@ -151,42 +156,46 @@ namespace VentasProject.Persistence.Repositories.Dwh
             }
         }
 
-        private async Task LoadDatesInternalAsync(List<DatesDto> dateDtos)
+        public async Task<Dictionary<int, int>> GetCustomerKeysMapAsync()
         {
-            _logger.LogInformation("Procesando {Count} fechas...", dateDtos.Count);
+            return await _context.DimCustomers.ToDictionaryAsync(c => c.CustomerId, c => c.CustomerKey);
+        }
 
-            var existingDateIds = await _context.DimDates
-                .Select(d => d.DateId)
-                .ToListAsync();
+        public async Task<Dictionary<int, int>> GetProductKeysMapAsync()
+        {
+            return await _context.DimProducts.ToDictionaryAsync(p => p.ProductId, p => p.ProductKey);
+        }
 
-            var existingSet = new HashSet<int>(existingDateIds);
-            var datesToInsert = new List<DimDates>();
+        public async Task<Dictionary<int, int>> GetDateKeysMapAsync()
+        {
+            return await _context.DimDates.ToDictionaryAsync(d => d.DateId, d => d.DateKey);
+        }
 
-            foreach (var dto in dateDtos)
+        public async Task<Result> LoadFactsAsync(List<FactVentas> facts)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            var result = new Result();
+            try
             {
-                if (!existingSet.Contains(dto.DateId))
+                if (facts.Any())
                 {
-                    datesToInsert.Add(new DimDates
-                    {
-                        DateId = dto.DateId,
-                        Date = dto.FullDate,
-                        Anio = dto.Year,
-                        Trimestre = dto.Quarter,
-                        Mes = dto.Month,
-                        NombreMes = dto.MonthName,
-                        Semana = dto.Week,
-                        DiaMes = dto.DayOfMonth,
-                        DiaSemana = dto.DayOfWeek,
-                        NombreDia = dto.DayName
-                    });
-                    existingSet.Add(dto.DateId);
-                }
-            }
+                    //Esto es para borrar los datos existentes y evitar duplicados
+                    await _context.Database.ExecuteSqlRawAsync("DELETE FROM [Facts].[Fact_Ventas]");
 
-            if (datesToInsert.Any())
+                    await _context.FactVentas.AddRangeAsync(facts);
+                    await _context.SaveChangesAsync();
+                }
+                await transaction.CommitAsync();
+                result.IsSuccess = true;
+                return result;
+            }
+            catch (Exception ex)
             {
-                await _context.DimDates.AddRangeAsync(datesToInsert);
-                _logger.LogInformation("Se detectaron {Count} fechas nuevas.", datesToInsert.Count);
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "Error al cargar hechos de ventas.");
+                result.IsSuccess = false;
+                result.Message = ex.Message;
+                return result;
             }
         }
     }

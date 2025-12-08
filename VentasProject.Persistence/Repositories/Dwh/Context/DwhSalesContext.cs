@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using VentasProject.Domain.Entities.Dwh.Dimensions;
+using VentasProject.Domain.Entities.Dwh.Facts;
 
 namespace VentasProject.Persistence.Repositories.Dwh.Context
 {
@@ -18,6 +19,7 @@ namespace VentasProject.Persistence.Repositories.Dwh.Context
         public DbSet<DimCustomers> DimCustomers { get; set; }
         public DbSet<DimProducts> DimProducts { get; set; }
         public DbSet<DimDates> DimDates { get; set; }
+        public DbSet<FactVentas> FactVentas { get; set; }   
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -61,6 +63,18 @@ namespace VentasProject.Persistence.Repositories.Dwh.Context
                 entity.Property(e => e.DiaMes).HasColumnName("DiaMes");
                 entity.Property(e => e.DiaSemana).HasColumnName("DiaSemana");
                 entity.Property(e => e.NombreDia).HasColumnName("NombreDia").HasMaxLength(50);
+            });
+
+
+            modelBuilder.Entity<FactVentas>(entity =>
+            {
+                entity.ToTable("Fact_Ventas", "Facts");
+                entity.HasKey(e => e.VentaId);
+                entity.Property(e => e.Fk_Product).HasColumnName("Fk_Product");
+                entity.Property(e => e.Fk_Customer).HasColumnName("Fk_Customer");
+                entity.Property(e => e.Fk_Date).HasColumnName("Fk_Date");
+                entity.Property(e => e.TotalVenta).HasColumnType("money");
+                entity.Property(e => e.Status).HasMaxLength(50);
             });
         }
     }

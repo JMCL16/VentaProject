@@ -1,10 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using VentasProject.Application.Repositories;
 using VentasProject.Domain.Entities.Csv;
 using VentasProject.Persistence.Repositories.Db.Context;
@@ -15,9 +10,10 @@ namespace VentasProject.Persistence.Repositories.Db
     {
         private readonly SalesContext _context;
         private readonly ILogger<SalesDbRepository> _logger;
-        public SalesDbRepository(SalesContext context)
+        public SalesDbRepository(SalesContext context, ILogger<SalesDbRepository> logger)
         {
             _context = context;
+            _logger = logger;
         }
         public async Task<IEnumerable<Sale>> GetAllSalesAsync()
         {

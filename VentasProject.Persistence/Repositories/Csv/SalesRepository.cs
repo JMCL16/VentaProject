@@ -29,7 +29,7 @@ namespace VentasProject.Persistence.Repositories.Csv
 
                 _logger.LogInformation("Iniciando la extraccion de order details");
                 var orderDetailsTask = _csvOrderDetailsReaderRepository.ReadFileAsync<OrderDetails>();
-                Task.WhenAll(orderTask, orderDetailsTask);
+                await Task.WhenAll(orderTask, orderDetailsTask);
                 var orders = (await orderTask).ToList();
                 var orderDetails = (await orderDetailsTask).ToList();
                 _logger.LogInformation("Completada la extraccion de datos. Datos de orders {Count}, Order Details {Count}", orders.Count, orderDetails.Count);
