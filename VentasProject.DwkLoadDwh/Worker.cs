@@ -1,71 +1,12 @@
-//using VentasProject.Application.Repositories.Csv;
-//using VentasProject.Domain.Entities.Csv;
-
-//namespace VentasProject.DwkLoadDwh
-//{
-//    public class Worker : BackgroundService
-//    {
-//        private readonly ILogger<Worker> _logger;
-//        private readonly IServiceScopeFactory _serviceScopeFactory;
-
-//        public Worker(ILogger<Worker> logger, IServiceScopeFactory serviceScopeFactory)
-//        {
-//            _logger = logger;
-//            _serviceScopeFactory = serviceScopeFactory;
-//        }
-
-//        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-//        {
-//            _logger.LogInformation("Worker started at: {time}", DateTimeOffset.Now);
-
-//            try
-//            {
-//                using (var scope = _serviceScopeFactory.CreateScope())
-//                {
-//                    var customerRepository = scope.ServiceProvider.GetRequiredService<ICsvCustomerReaderRepository>();
-//                    var productRepository = scope.ServiceProvider.GetRequiredService<ICsvProductReaderRepository>();
-//                    var salesRepository = scope.ServiceProvider.GetRequiredService<ISalesRepository>();
-
-//                    _logger.LogInformation("Extrayendo y trasformando Ventas...");
-//                    var salesTask = salesRepository.GetSalesDataAsync();
-
-//                    _logger.LogInformation("Extrayend customers del CSV...");
-//                    var customersTask = customerRepository.ReadFileAsync<Customers>();
-//                    _logger.LogInformation("Extrayendo products del CSV...");
-//                    var productsTask = productRepository.ReadFileAsync<Products>();
-
-//                    await Task.WhenAll(salesTask, customersTask, productsTask);
-
-//                    var salesData = (await salesTask).ToList();
-//                    var customersData = (await customersTask).ToList();
-//                    var productsData = (await productsTask).ToList();
-
-//                    _logger.LogInformation("=========== Resumen del Extract ========");
-//                    _logger.LogInformation("Total de Sales extraidos y transformados: {count}", salesData.Count());
-//                    _logger.LogInformation("Total de Customers extraidos: {count}", customersData.Count);
-//                    _logger.LogInformation("Total de Products extraidos: {count}", productsData.Count);
-//                    _logger.LogInformation("===================");
-//                }
-//            }
-//            catch (Exception ex)
-//            {
-//                _logger.LogError(ex, "An error occurred during the CSV extraction process.");
-//            }
-//            finally
-//            {
-//                _logger.LogInformation("Worker finished at: {time}", DateTimeOffset.Now);
-//            }
-//        }
-//    }
-//}
-
-using VentasProject.Application.Dtos;       // Necesario para DimDtos
-using VentasProject.Application.Interfaces; // Necesario para IDwhRepository
+using Microsoft.VisualBasic;
+using System.Globalization;
+using VentasProject.Application.Dtos;
+using VentasProject.Application.Interfaces;
 using VentasProject.Application.Repositories.Csv;
 using VentasProject.Application.Repositories.Dwh;
-using VentasProject.Domain.Entities;        // Necesario para DimCustomer/DimProduct (Entidades DWH)
 using VentasProject.Domain.Entities.Csv;
 using VentasProject.Domain.Entities.Dwh.Dimensions;
+// IMPORTANTE: Asegúrate de que este namespace tenga tus entidades DimCustomers, DimProducts y DimDate
 
 namespace VentasProject.DwkLoadDwh
 {
@@ -82,48 +23,44 @@ namespace VentasProject.DwkLoadDwh
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _logger.LogInformation("Worker started at: {time}", DateTimeOffset.Now);
+            _logger.LogInformation("Worker iniciado a las: {time}", DateTimeOffset.Now);
 
             try
             {
                 using (var scope = _serviceScopeFactory.CreateScope())
                 {
-                    // 1. Obtener los repositorios CSV (Tu código existente)
+                    // 1. Obtener Servicios
                     var customerRepository = scope.ServiceProvider.GetRequiredService<ICsvCustomerReaderRepository>();
                     var productRepository = scope.ServiceProvider.GetRequiredService<ICsvProductReaderRepository>();
-
-                    // 2. NUEVO: Obtener el repositorio del DWH
                     var dwhRepository = scope.ServiceProvider.GetRequiredService<IDwhRepository>();
 
                     _logger.LogInformation("--- INICIO DE EXTRACCIÓN (CSV) ---");
 
-                    // Extracción (Tu código existente)
-                    var customersTask = customerRepository.ReadFileAsync<Customers>(); // CSV Entities
-                    var productsTask = productRepository.ReadFileAsync<Products>();   // CSV Entities
+                    var customersTask = customerRepository.ReadFileAsync<Customers>();
+                    var productsTask = productRepository.ReadFileAsync<Products>();
 
                     await Task.WhenAll(customersTask, productsTask);
 
                     var csvCustomers = (await customersTask).ToList();
                     var csvProducts = (await productsTask).ToList();
 
-                    _logger.LogInformation($"Datos extraídos CSV -> Clientes: {csvCustomers.Count}, Productos: {csvProducts.Count}");
+                    _logger.LogInformation($"Datos CSV -> Clientes: {csvCustomers.Count}, Productos: {csvProducts.Count}");
 
-                    // 3. NUEVO: TRANSFORMACIÓN (Mapeo CSV -> DWH Entity)
                     _logger.LogInformation("--- INICIO DE TRANSFORMACIÓN ---");
 
                     var dimData = new DimDtos();
 
-                    // Transformar Clientes
+                    // A. Transformar Clientes (CORREGIDO NOMBRE COMPLETO)
                     dimData.Customers = csvCustomers.Select(c => new DimCustomers
                     {
-                        // Asegúrate que las propiedades coincidan con tu Entidad de Dominio
-                        CustomerId = c.CustomerId,      // Asumiendo que tu CSV tiene Id
-                        CustomerName = c.FirstName,
+                        CustomerId = c.CustomerId,
+                        // AQUÍ ESTABA EL ERROR DEL NOMBRE:
+                        CustomerName = $"{c.FirstName} {c.LastName}".Trim(),
                         City = c.City ?? "Desconocido",
                         Country = c.Country ?? "Desconocido"
                     }).ToList();
 
-                    // Transformar Productos
+                    // B. Transformar Productos
                     dimData.Products = csvProducts.Select(p => new DimProducts
                     {
                         ProductId = p.ProductId,
@@ -132,22 +69,49 @@ namespace VentasProject.DwkLoadDwh
                         ListPrice = p.Price
                     }).ToList();
 
-                    // 4. NUEVO: CARGA (Load)
-                    _logger.LogInformation("--- CARGANDO EN DATA WAREHOUSE ---");
+                    // C. Generar Fechas (ESTO FALTABA)
+                    _logger.LogInformation("Generando Dimensión de Fechas...");
+                    dimData.Dates = GenerateDates(2020, 2030);
+
+                    // 4. CARGA
+                    _logger.LogInformation($"--- CARGANDO {dimData.Dates.Count} FECHAS, {dimData.Customers.Count} CLIENTES Y {dimData.Products.Count} PRODUCTOS ---");
 
                     await dwhRepository.LoadDimsDataAsync(dimData);
 
-                    _logger.LogInformation("¡Carga de Dimensiones Exitosa!");
+                    _logger.LogInformation("¡Carga de TODAS las Dimensiones Exitosa!");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Ocurrió un error durante el proceso de Carga de Dimensiones.");
+                _logger.LogError(ex, "ERROR FATAL en el Worker.");
             }
-            finally
+        }
+
+        // Método auxiliar para generar fechas
+        private List<DimDates> GenerateDates(int startYear, int endYear)
+        {
+            var datesList = new List<DimDates>();
+            var startDate = new DateTime(startYear, 1, 1);
+            var endDate = new DateTime(endYear, 12, 31);
+            var culture = new CultureInfo("es-ES");
+
+            for (var dt = startDate; dt <= endDate; dt = dt.AddDays(1))
             {
-                _logger.LogInformation("Worker finished cycle at: {time}", DateTimeOffset.Now);
+                datesList.Add(new DimDates
+                {
+                    DateId = (dt.Year * 10000) + (dt.Month * 100) + dt.Day,
+                    Date = dt,
+                    Anio = dt.Year,
+                    Trimestre = ((dt.Month - 1) / 3) + 1,
+                    Mes = dt.Month,
+                    NombreMes = culture.TextInfo.ToTitleCase(dt.ToString("MMMM", culture)),
+                    Semana = culture.Calendar.GetWeekOfYear(dt, CalendarWeekRule.FirstDay, DayOfWeek.Monday),
+                    DiaMes = dt.Day,
+                    DiaSemana = (int)dt.DayOfWeek,
+                    NombreDia = culture.TextInfo.ToTitleCase(dt.ToString("dddd", culture))
+                });
             }
+            return datesList;
         }
     }
 }

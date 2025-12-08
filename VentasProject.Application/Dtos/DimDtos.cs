@@ -9,9 +9,9 @@ namespace VentasProject.Application.Dtos
 {
     public class DimDtos
     {
-        public List<DimCustomers> Customers { get; set; } = new List<DimCustomers>();
-        public List<DimProducts> Products { get; set; } = new List<DimProducts>();
-        public List<DatesDto>? Dates { get; set; }
+        public List<DimCustomers> Customers { get; set; } = new();
+        public List<DimProducts> Products { get; set; } = new();
+        public List<DimDates>? Dates { get; set; }
 
 
     }

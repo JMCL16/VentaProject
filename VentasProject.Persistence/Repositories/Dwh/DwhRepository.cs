@@ -42,6 +42,15 @@ namespace VentasProject.Persistence.Repositories.Dwh
 
                     if (dimDtos.Customers != null && dimDtos.Customers.Any())
                     {
+                        //Esto es para evitar duplicados
+                        var existingCustomerIds = await _context.DimCustomers
+                        .Select(c => c.CustomerId)
+                        .ToListAsync();
+
+                        var newCustomers = dimDtos.Customers.GroupBy(c => c.CustomerId).Select(g => g.First())
+                        .Where(c => !existingCustomerIds.Contains(c.CustomerId))
+                        .ToList();
+
                         var customersEntities = dimDtos.Customers.Select(c => new DimCustomers
                         {
                             CustomerId = c.CustomerId,
@@ -50,11 +59,24 @@ namespace VentasProject.Persistence.Repositories.Dwh
                             Country = c.Country
                         }).ToList();
 
-                        await _context.DimCustomers.AddRangeAsync(customersEntities);
+                        if (newCustomers.Any())
+                        {
+                            await _context.DimCustomers.AddRangeAsync(customersEntities);
+                        }
                     }
 
                     if (dimDtos.Products != null && dimDtos.Products.Any())
                     {
+                        var existingProductIds = await _context.DimProducts
+                        .Select(p => p.ProductId)
+                        .ToListAsync();
+
+                        var newProducts = dimDtos.Products
+                            .GroupBy(p => p.ProductId).Select(g => g.First()) 
+                            .Where(p => !existingProductIds.Contains(p.ProductId)) 
+                            .ToList();
+
+
                         var productsEntities = dimDtos.Products.Select(p => new DimProducts
                         {
                             ProductId = p.ProductId,
@@ -63,12 +85,26 @@ namespace VentasProject.Persistence.Repositories.Dwh
                             ListPrice = p.ListPrice
                         }).ToList();
 
-                        await _context.DimProducts.AddRangeAsync(productsEntities);
+                        if (newProducts.Any())
+                        {
+                            await _context.DimProducts.AddRangeAsync(productsEntities);
+                        }
                     }
 
                     if (dimDtos.Dates != null && dimDtos.Dates.Any())
                     {
-                        await LoadDatesInternalAsync(dimDtos.Dates);
+                        var existingDateIds = await _context.DimDates
+                        .Select(d => d.DateId)
+                        .ToListAsync();
+
+                        var newDates = dimDtos.Dates
+                            .GroupBy(d => d.DateId).Select(g => g.First())
+                            .Where(d => !existingDateIds.Contains(d.DateId))
+                            .ToList();
+
+                        if (newDates.Any()) {
+                            await _context.DimDates.AddRangeAsync(dimDtos.Dates);
+                        }
                     }
 
                     await _context.SaveChangesAsync();

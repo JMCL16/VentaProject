@@ -56,7 +56,7 @@ namespace VentasProject.Persistence.Repositories.Dwh.Context
                 entity.Property(e => e.Anio).HasColumnName("Anio");
                 entity.Property(e => e.Trimestre).HasColumnName("Trimestre");
                 entity.Property(e => e.Mes).HasColumnName("Mes");
-                entity.Property(e => e.NombreMes).HasColumnName("Nombre_Mes").HasMaxLength(50);
+                entity.Property(e => e.NombreMes).HasColumnName("NombreMes").HasMaxLength(50);
                 entity.Property(e => e.Semana).HasColumnName("Semana");
                 entity.Property(e => e.DiaMes).HasColumnName("DiaMes");
                 entity.Property(e => e.DiaSemana).HasColumnName("DiaSemana");

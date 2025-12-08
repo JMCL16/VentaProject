@@ -27,7 +27,7 @@ namespace VentasProject.Application.Services
             dimDtos.Customers = rawCustomers.Select(c => new DimCustomers
             {
                 CustomerId = c.CustomerId,
-                CustomerName = $"{c.FirstName} {c.LastName}".Trim(),
+                CustomerName = $"{c.FirstName} {c.LastName ?? ""}".Trim(),
                 City = c.City ?? "Desconocido",
                 Country = c.Country ?? "Desconocido"
             }).ToList();
@@ -53,18 +53,18 @@ namespace VentasProject.Application.Services
             {
                 DateTime dt = d.ToDateTime(TimeOnly.MinValue);
 
-                return new DatesDto
+                return new DimDates
                 {
                     DateId = (dt.Year * 10000) + (dt.Month * 100) + dt.Day,
-                    FullDate = dt,
-                    Year = dt.Year,
-                    Month = dt.Month,
-                    DayOfMonth = dt.Day,
-                    DayOfWeek = (int)dt.DayOfWeek,
-                    Quarter = ((dt.Month - 1) / 3) + 1,
-                    Week = culture.Calendar.GetWeekOfYear(dt, CalendarWeekRule.FirstDay, DayOfWeek.Monday),
-                    MonthName = culture.TextInfo.ToTitleCase(dt.ToString("MMMM", culture)),
-                    DayName = culture.TextInfo.ToTitleCase(dt.ToString("dddd", culture))
+                    Date = dt,
+                    Anio = dt.Year,
+                    Mes = dt.Month,
+                    DiaMes = dt.Day,
+                    DiaSemana = (int)dt.DayOfWeek,
+                    Trimestre = ((dt.Month - 1) / 3) + 1,
+                    Semana = culture.Calendar.GetWeekOfYear(dt, CalendarWeekRule.FirstDay, DayOfWeek.Monday),
+                    NombreMes = culture.TextInfo.ToTitleCase(dt.ToString("MMMM", culture)),
+                    NombreDia = culture.TextInfo.ToTitleCase(dt.ToString("dddd", culture))
                 };
             }).ToList();
 
